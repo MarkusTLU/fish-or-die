@@ -1,0 +1,129 @@
+[gd_scene format=3 uid="uid://bk51nhi01coa6"]
+
+[ext_resource type="Texture2D" uid="uid://bgyeyjy25ip01" path="res://art/taust/Taevas.png" id="1_efxa6"]
+[ext_resource type="Texture2D" uid="uid://dwkhd0x42wa31" path="res://art/taust/Kuu.png" id="2_dg77c"]
+[ext_resource type="Texture2D" uid="uid://bg06xtex312vb" path="res://art/taust/Mets taga.png" id="3_ycdy4"]
+[ext_resource type="Texture2D" uid="uid://y6wcka1o1sg6" path="res://art/taust/Mets keskel.png" id="4_w48qg"]
+[ext_resource type="Texture2D" uid="uid://dw7x47pc0pgnp" path="res://art/taust/Mets ees.png" id="5_vivmo"]
+[ext_resource type="Texture2D" uid="uid://bjyk5ccimyilp" path="res://art/taust/Vesi.png" id="6_2cqfq"]
+[ext_resource type="Texture2D" uid="uid://cyeom2eeynytt" path="res://art/taust/Vetikad.png" id="7_yaehf"]
+[ext_resource type="Texture2D" uid="uid://dhebmoeenf6rq" path="res://art/taust/Dokk.png" id="8_074og"]
+[ext_resource type="Texture2D" uid="uid://b330oajyoblrp" path="res://art/kalad/kuldne.png" id="8_w48qg"]
+[ext_resource type="Texture2D" uid="uid://caxisw4xfafp6" path="res://art/paat/kalur.png" id="9_cegan"]
+[ext_resource type="Texture2D" uid="uid://byrgbyb40u1o8" path="res://art/kalad/oranz.png" id="9_vivmo"]
+[ext_resource type="Texture2D" uid="uid://bhbyml5ihmwn" path="res://art/kalad/sardiin.png" id="10_2cqfq"]
+[ext_resource type="Texture2D" uid="uid://4yctnc8d08vc" path="res://art/paat/ong.png" id="10_82xsv"]
+[ext_resource type="Texture2D" uid="uid://cjp86sd8psel7" path="res://art/paat/paat.png" id="11_getpj"]
+[ext_resource type="Texture2D" uid="uid://b3jj6hywrqjo7" path="res://art/ui/ikoon_kuld.png" id="15_2cqfq"]
+[ext_resource type="FontFile" uid="uid://cbittsoiqjv5d" path="res://art/ui/m3x6.ttf" id="16_2cqfq"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_w48qg"]
+load_path = "res://.godot/imported/paneel_9patch.png-9d4bf37339e628ed94b994782387f886.ctex"
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jr6nt"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+texture = SubResource("CompressedTexture2D_w48qg")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+
+[sub_resource type="FontVariation" id="FontVariation_qlure"]
+base_font = ExtResource("16_2cqfq")
+spacing_top = -4
+spacing_bottom = -4
+
+[node name="Main" type="Node2D" unique_id=1680446467]
+
+[node name="Taevas" type="Sprite2D" parent="." unique_id=2002680188]
+texture = ExtResource("1_efxa6")
+centered = false
+
+[node name="Kuu" type="Sprite2D" parent="." unique_id=1857566208]
+texture = ExtResource("2_dg77c")
+centered = false
+
+[node name="Mets taga" type="Sprite2D" parent="." unique_id=1734130364]
+texture = ExtResource("3_ycdy4")
+centered = false
+
+[node name="Mets keskel" type="Sprite2D" parent="." unique_id=1315348525]
+texture = ExtResource("4_w48qg")
+centered = false
+
+[node name="Mets ees" type="Sprite2D" parent="." unique_id=630547304]
+texture = ExtResource("5_vivmo")
+centered = false
+
+[node name="Vesi" type="Sprite2D" parent="." unique_id=1478193399]
+texture = ExtResource("6_2cqfq")
+centered = false
+
+[node name="Vetikad" type="Sprite2D" parent="." unique_id=753097856]
+texture = ExtResource("7_yaehf")
+centered = false
+
+[node name="Kuldne" type="Sprite2D" parent="." unique_id=1960926660]
+position = Vector2(60, 163)
+texture = ExtResource("8_w48qg")
+centered = false
+
+[node name="Oranz" type="Sprite2D" parent="." unique_id=128907342]
+position = Vector2(150, 140)
+texture = ExtResource("9_vivmo")
+centered = false
+
+[node name="Sardiin" type="Sprite2D" parent="." unique_id=1426123]
+position = Vector2(30, 118)
+texture = ExtResource("10_2cqfq")
+centered = false
+
+[node name="Dokk" type="Sprite2D" parent="." unique_id=1098779946]
+texture = ExtResource("8_074og")
+centered = false
+
+[node name="Paat" type="Node2D" parent="." unique_id=615738068]
+position = Vector2(75, 96)
+
+[node name="Kalur" type="Sprite2D" parent="Paat" unique_id=1137539726]
+position = Vector2(22, -8)
+texture = ExtResource("9_cegan")
+centered = false
+
+[node name="Ong" type="Sprite2D" parent="Paat" unique_id=1948771615]
+position = Vector2(-2, -17)
+texture = ExtResource("10_82xsv")
+centered = false
+
+[node name="Paat" type="Sprite2D" parent="Paat" unique_id=957626212]
+texture = ExtResource("11_getpj")
+centered = false
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=38469330]
+
+[node name="PanelContainer" type="PanelContainer" parent="UI" unique_id=957246023]
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 14.0
+offset_bottom = 12.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_jr6nt")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/PanelContainer" unique_id=1988059988]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBoxContainer" unique_id=1223691404]
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("15_2cqfq")
+stretch_mode = 3
+
+[node name="Label" type="Label" parent="UI/PanelContainer/HBoxContainer" unique_id=1369602693]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9098039, 0.8784314, 0.8156863, 1)
+theme_override_fonts/font = SubResource("FontVariation_qlure")
+theme_override_font_sizes/font_size = 16
+text = "37"
+vertical_alignment = 1
