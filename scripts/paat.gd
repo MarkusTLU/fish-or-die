@@ -3,6 +3,9 @@ extends Node2D
 @export var speed := 40.0
 @export var min_depth := 4.0
 @export var max_depth := 70.0
+@export var bob_height := 0.8
+@export var drift_distance := 2.0
+@export var rocking_angle := 0.012
 
 const SURFACE_Y := 10.0            # veepind (106 - 96)
 const LINE_X := -5.0               # kus tamiil vette läheb
@@ -13,6 +16,9 @@ enum State { IDLE, CASTING, IN_WATER }
 var state := State.IDLE
 var depth := 0.0
 var fly_t := 0.0   # 0 = konks õnge otsas, 1 = konks vees
+var sailing_time := 0.0
+var rest_position := Vector2.ZERO
+var rest_rotation := 0.0
 
 @export var rod: Sprite2D
 @onready var line: Line2D = $Tamiil
@@ -20,6 +26,8 @@ var fly_t := 0.0   # 0 = konks õnge otsas, 1 = konks vees
 @onready var hook: Sprite2D = $Konks
 
 func _ready() -> void:
+	rest_position = position
+	rest_rotation = rotation
 	line.width = 1.0
 	line.default_color = Color("9aa7b0")
 
@@ -28,6 +36,13 @@ func rod_tip() -> Vector2:
 	return rod.position + ROD_VECTOR.rotated(rod.rotation)
 
 func _process(delta: float) -> void:
+	sailing_time += delta
+	position = rest_position + Vector2(
+		sin(sailing_time * 0.65) * drift_distance,
+		sin(sailing_time * 1.8) * bob_height
+	)
+	rotation = rest_rotation + sin(sailing_time * 1.35) * rocking_angle
+
 	if Input.is_action_just_pressed("ui_accept"):
 		if state == State.IDLE:
 			start_cast()
@@ -35,13 +50,15 @@ func _process(delta: float) -> void:
 			state = State.IDLE
 
 	var tip := rod_tip()
-	var bob := Vector2(LINE_X, SURFACE_Y)
+	# Keep the float and submerged hook in the water as the boat rocks.
+	var water_position := rest_position + Vector2(LINE_X, SURFACE_Y)
+	var bob := to_local(get_parent().to_global(water_position))
 
 	match state:
 		State.IDLE:
 			bobber.visible = false
 			var hang := tip + Vector2(0, HANG_LENGTH)
-			hook.position = (hang + Vector2(-2, 0)).round()
+			hook.position = hang + Vector2(-2, 0)
 			line.points = PackedVector2Array([tip, hang])
 
 		State.CASTING:
@@ -50,13 +67,13 @@ func _process(delta: float) -> void:
 			var start := tip + Vector2(0, HANG_LENGTH)
 			var p := start.lerp(bob, fly_t)
 			p.y -= sin(fly_t * PI) * 12.0
-			hook.position = (p + Vector2(-2, 0)).round()
+			hook.position = p + Vector2(-2, 0)
 			line.points = PackedVector2Array([tip, p])
 
 		State.IN_WATER:
 			var dir := Input.get_axis("ui_up", "ui_down")
 			depth = clamp(depth + dir * speed * delta, min_depth, max_depth)
-			var hook_pos := Vector2(LINE_X, round(SURFACE_Y + depth))
+			var hook_pos := to_local(get_parent().to_global(water_position + Vector2(0, depth)))
 			bobber.visible = true
 			bobber.position = bob + Vector2(-1, -2)
 			hook.position = hook_pos + Vector2(-2, 0)
