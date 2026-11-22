@@ -10,6 +10,7 @@ const FONT = preload("res://art/ui/m3x6.ttf")
 var day_number := 1
 var time_remaining := 0.0
 var waiting_for_shop := false
+var bucket_label: Label
 var day_label: Label
 var timer_label: Label
 
@@ -17,10 +18,12 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	time_remaining = day_length_seconds
+	bucket_label = make_label("BUCKET 0", Vector2(60, 4), Vector2(82, 18))
 	timer_label = make_label("02:00", Vector2(210, 4), Vector2(44, 18))
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	day_label = make_label("DAY 1", Vector2(260, 4), Vector2(50, 18))
 	day_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	add_child(bucket_label)
 	add_child(day_label)
 	add_child(timer_label)
 	shop.shop_closed.connect(_on_shop_closed)
@@ -52,6 +55,9 @@ func update_hud() -> void:
 	var minutes := floori(float(total_seconds) / 60.0)
 	var seconds := total_seconds % 60
 	timer_label.text = "%02d:%02d" % [minutes, seconds]
+
+func set_bucket_count(count: int) -> void:
+	bucket_label.text = "BUCKET %d" % count
 
 func _on_shop_closed(ended_day: bool) -> void:
 	if not ended_day:

@@ -6,13 +6,14 @@ extends Node2D
 @export var bob_height := 0.8
 @export var drift_distance := 2.0
 @export var rocking_angle := 0.012
+const UI_FONT = preload("res://art/ui/m3x6.ttf")
 
 const SURFACE_Y := 10.0            # veepind (106 - 96)
 const LINE_X := -5.0               # kus tamiil vette läheb
 const HANG_LENGTH := 6.0           # kui pikalt konks otsas ripub
 const ROD_VECTOR := Vector2(-24, -16)  # käest õnge otsani
 
-enum State { IDLE, CASTING, IN_WATER, MINIGAME }
+enum State { IDLE, CASTING, IN_WATER, BITE, MINIGAME }
 var state := State.IDLE
 var depth := 0.0
 var fly_t := 0.0   # 0 = konks õnge otsas, 1 = konks vees
@@ -59,6 +60,10 @@ func _process(delta: float) -> void:
 			start_cast()
 		elif state == State.IN_WATER:
 			state = State.IDLE
+		elif state == State.BITE and is_instance_valid(target_fish):
+			state = State.MINIGAME
+			queue_redraw()
+			fishing_minigame.start_game(target_fish)
 
 	var tip := rod_tip()
 	# Keep the float and submerged hook in the water as the boat rocks.
@@ -81,15 +86,23 @@ func _process(delta: float) -> void:
 			hook.position = p + Vector2(-2, 0)
 			line.points = PackedVector2Array([tip, p])
 
-		State.IN_WATER:
-			var dir := Input.get_axis("ui_up", "ui_down")
-			depth = clamp(depth + dir * speed * delta, min_depth, max_depth)
+		State.IN_WATER, State.BITE:
+			if state == State.IN_WATER:
+				var dir := Input.get_axis("ui_up", "ui_down")
+				depth = clamp(depth + dir * speed * delta, min_depth, max_depth)
 			var hook_pos := to_local(get_parent().to_global(water_position + Vector2(0, depth)))
 			bobber.visible = true
-			bobber.position = bob + Vector2(-1, -2)
+			bobber.position = bob + Vector2(-1, 2) if state == State.BITE else bob + Vector2(-1, -2)
 			hook.position = hook_pos + Vector2(-2, 0)
 			line.points = PackedVector2Array([tip, bob, hook_pos])
-			try_find_fish(hook.position)
+			if state == State.IN_WATER:
+				try_find_fish(hook.position)
+			elif state == State.BITE:
+				queue_redraw()
+
+func _draw() -> void:
+	if state == State.BITE:
+		draw_string(UI_FONT, bobber.position + Vector2(-1, -7), "!", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("f2dfb7"))
 
 func try_find_fish(hook_local_position: Vector2) -> void:
 	if bite_cooldown > 0.0:
@@ -97,21 +110,26 @@ func try_find_fish(hook_local_position: Vector2) -> void:
 	var fish_position: Vector2 = fish_school.to_local(to_global(hook_local_position))
 	target_fish = fish_school.find_fish_near(fish_position)
 	if target_fish != null:
-		state = State.MINIGAME
-		fishing_minigame.start_game(fish_school.get_fish_value(target_fish))
+		state = State.BITE
+		queue_redraw()
 
 func _on_fish_caught() -> void:
 	if is_instance_valid(target_fish):
 		var reward: int = fish_school.catch_fish(target_fish)
+		upgrade_store.add_to_bucket()
 		upgrade_store.award_coins(reward)
 	target_fish = null
-	state = State.IN_WATER
+	state = State.IDLE
+	rod.rotation = 0.0
+	bobber.visible = false
 	bite_cooldown = 0.8
+	queue_redraw()
 
 func _on_fish_escaped() -> void:
 	target_fish = null
 	state = State.IN_WATER
 	bite_cooldown = 1.5
+	queue_redraw()
 
 func start_cast() -> void:
 	state = State.CASTING

@@ -8,12 +8,14 @@ const STARTING_COINS := 37
 
 @onready var coins_hud: Label = get_node("../PanelContainer/HBoxContainer/Label")
 @onready var boat: Node2D = get_node("../../Paat")
+@onready var day_hud = get_node("../DayHUD")
 
 var coins := STARTING_COINS
 var shop_panel: Control
 var coins_label: Label
 var dialogue_label: Label
 var end_day_shop := false
+var bucket_count := 0
 var card_buttons: Dictionary = {}
 var levels := {
 	"Deep Line": 0,
@@ -52,6 +54,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open_for_end_of_day() -> void:
 	end_day_shop = true
+	if bucket_count > 0:
+		dialogue_label.text = "You hauled up %d fish. Choose your gear carefully." % bucket_count
+	else:
+		dialogue_label.text = "Your bucket's empty, chum. Try again tomorrow."
 	shop_panel.visible = true
 
 func build_shop() -> void:
@@ -189,6 +195,10 @@ func award_coins(amount: int) -> void:
 	coins_hud.text = str(coins)
 	if is_instance_valid(coins_label):
 		coins_label.text = str(coins)
+
+func add_to_bucket() -> void:
+	bucket_count += 1
+	day_hud.set_bucket_count(bucket_count)
 
 func apply_upgrade(item_name: String) -> void:
 	match item_name:
