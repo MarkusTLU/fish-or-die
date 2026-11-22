@@ -13,6 +13,8 @@ const FONT = preload("res://art/ui/m3x6.ttf")
 @onready var fishing_minigame = get_node("../FishingMinigame")
 @onready var boat = get_node("../../Paat")
 @onready var fish_school = get_node("../../FishSchool")
+@onready var dock_view = get_node("../../DockView")
+var dock_message := ""
 
 var phase := Phase.DOCK
 var day_number := 1
@@ -39,7 +41,22 @@ func _ready() -> void:
 
 func open_initial_dock() -> void:
 	boat.reset_fishing(true)
-	shop.open_dock("Catch at least %d gold of fish. Return before the deep claims you." % quota)
+	dock_view.shop_requested.connect(open_shop)
+	dock_view.row_out_requested.connect(start_round)
+	show_dock("Catch at least %d gold of fish. Return before the deep claims you." % quota)
+
+# Dokivaade: kalur kõnnib dokil, poe saab avada E-ga poe ees
+func show_dock(message: String) -> void:
+	dock_message = message
+	dock_view.enter(message)
+
+func open_shop() -> void:
+	dock_view.paused = true
+	shop.open_dock(dock_message)
+
+func close_shop() -> void:
+	shop.close_dock()
+	dock_view.paused = false
 
 func round_duration() -> float:
 	return day_length_seconds + (day_number - 1) * extra_seconds_per_round
@@ -58,6 +75,7 @@ func start_round() -> void:
 	fish_school.replenish()
 	boat.reset_fishing(true)
 	shop.close_dock()
+	dock_view.leave()
 	phase = Phase.FISHING
 	update_hud()
 
@@ -111,7 +129,7 @@ func complete_round() -> void:
 	time_remaining = round_duration()
 	message_label.text = ""
 	update_hud()
-	shop.open_dock("Sold %d fish for %d gold. Next quota: %d gold." % [sold_count, sold_value, quota])
+	show_dock("Sold %d fish for %d gold. Next quota: %d gold." % [sold_count, sold_value, quota])
 
 func end_run() -> void:
 	if not is_fishing():

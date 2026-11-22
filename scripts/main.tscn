@@ -1,0 +1,264 @@
+[gd_scene format=3 uid="uid://bk51nhi01coa6"]
+
+[ext_resource type="PackedScene" path="res://scenes/dokk.tscn" id="90_dockview"]
+[ext_resource type="Texture2D" uid="uid://bgyeyjy25ip01" path="res://art/taust/Taevas.png" id="1_efxa6"]
+[ext_resource type="Texture2D" uid="uid://dwkhd0x42wa31" path="res://art/taust/Kuu.png" id="2_dg77c"]
+[ext_resource type="Texture2D" uid="uid://bg06xtex312vb" path="res://art/taust/Mets taga.png" id="3_ycdy4"]
+[ext_resource type="Texture2D" uid="uid://y6wcka1o1sg6" path="res://art/taust/Mets keskel.png" id="4_w48qg"]
+[ext_resource type="Texture2D" uid="uid://dw7x47pc0pgnp" path="res://art/taust/Mets ees.png" id="5_vivmo"]
+[ext_resource type="Texture2D" uid="uid://bjyk5ccimyilp" path="res://art/taust/Vesi.png" id="6_2cqfq"]
+[ext_resource type="Texture2D" uid="uid://cyeom2eeynytt" path="res://art/taust/Vetikad.png" id="7_yaehf"]
+[ext_resource type="Texture2D" uid="uid://dhebmoeenf6rq" path="res://art/taust/Dokk.png" id="8_074og"]
+[ext_resource type="Texture2D" uid="uid://b330oajyoblrp" path="res://art/kalad/kuldne.png" id="8_w48qg"]
+[ext_resource type="Texture2D" uid="uid://caxisw4xfafp6" path="res://art/paat/kalur.png" id="9_cegan"]
+[ext_resource type="Texture2D" uid="uid://byrgbyb40u1o8" path="res://art/kalad/oranz.png" id="9_vivmo"]
+[ext_resource type="Texture2D" uid="uid://bhbyml5ihmwn" path="res://art/kalad/sardiin.png" id="10_2cqfq"]
+[ext_resource type="Texture2D" uid="uid://4yctnc8d08vc" path="res://art/paat/ong.png" id="10_82xsv"]
+[ext_resource type="Texture2D" uid="uid://cjp86sd8psel7" path="res://art/paat/paat.png" id="11_getpj"]
+[ext_resource type="Script" uid="uid://cekxjxx07l2oc" path="res://scripts/paat.gd" id="12_cegan"]
+[ext_resource type="Texture2D" uid="uid://pd0liryxcme0" path="res://art/paat/ujuk.png" id="13_82xsv"]
+[ext_resource type="Texture2D" uid="uid://d35s4fmvgb3bx" path="res://art/paat/konks.png" id="14_getpj"]
+[ext_resource type="Texture2D" uid="uid://b3jj6hywrqjo7" path="res://art/ui/ikoon_kuld.png" id="15_2cqfq"]
+[ext_resource type="FontFile" uid="uid://cbittsoiqjv5d" path="res://art/ui/m3x6.ttf" id="16_2cqfq"]
+[ext_resource type="Script" uid="uid://b0xorghr80mac" path="res://scripts/fish_school.gd" id="20_fish_school"]
+[ext_resource type="Script" uid="uid://bbr47rypjvd81" path="res://scripts/upgrade_store.gd" id="22_store"]
+[ext_resource type="Script" uid="uid://coajbiu5pnmvw" path="res://scripts/fishing_minigame.gd" id="23_minigame"]
+[ext_resource type="Script" uid="uid://c8f7864qp31ca" path="res://scripts/day_hud.gd" id="24_day_hud"]
+[ext_resource type="Script" uid="uid://dbep15limxj33" path="res://scripts/vesi_pind.gd" id="25_vesi"]
+[ext_resource type="AudioStream" uid="uid://ckfrf0bomjvyk" path="res://art/audio/plop.wav" id="26_plop"]
+
+[sub_resource type="Theme" id="Theme_hud"]
+default_font = ExtResource("16_2cqfq")
+default_font_size = 12
+Label/colors/font_color = Color(0.949, 0.875, 0.718, 1)
+Label/colors/font_outline_color = Color(0.067, 0.082, 0.102, 1)
+Label/constants/outline_size = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxTexture_jr6nt"]
+bg_color = Color(0.063, 0.09, 0.11, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.29, 0.33, 1)
+
+[node name="Main" type="Node2D" unique_id=1680446467]
+metadata/_edit_vertical_guides_ = [312.0, 8.0, 278.0, 283.0, 9.0, 14.0, 69.0]
+metadata/_edit_horizontal_guides_ = [8.0, 30.0, 17.0, 21.0, 12.0, 26.0]
+
+[node name="Taevas" type="Sprite2D" parent="." unique_id=2002680188]
+texture = ExtResource("1_efxa6")
+centered = false
+
+[node name="Kuu" type="Sprite2D" parent="." unique_id=1857566208]
+texture = ExtResource("2_dg77c")
+centered = false
+
+[node name="Mets taga" type="Sprite2D" parent="." unique_id=1734130364]
+texture = ExtResource("3_ycdy4")
+centered = false
+
+[node name="Mets keskel" type="Sprite2D" parent="." unique_id=1315348525]
+texture = ExtResource("4_w48qg")
+centered = false
+
+[node name="Mets ees" type="Sprite2D" parent="." unique_id=630547304]
+texture = ExtResource("5_vivmo")
+centered = false
+
+[node name="Vesi" type="Sprite2D" parent="." unique_id=1478193399]
+texture = ExtResource("6_2cqfq")
+centered = false
+
+[node name="VeePind" type="Node2D" parent="." unique_id=1934690506]
+script = ExtResource("25_vesi")
+
+[node name="Vetikad" type="Sprite2D" parent="." unique_id=753097856]
+texture = ExtResource("7_yaehf")
+centered = false
+
+[node name="FishSchool" type="Node2D" parent="." unique_id=1763252313]
+script = ExtResource("20_fish_school")
+
+[node name="Kuldne" type="Sprite2D" parent="FishSchool" unique_id=1960926660]
+position = Vector2(60, 163)
+texture = ExtResource("8_w48qg")
+centered = false
+
+[node name="Oranz" type="Sprite2D" parent="FishSchool" unique_id=128907342]
+position = Vector2(150, 140)
+texture = ExtResource("9_vivmo")
+centered = false
+
+[node name="Sardiin" type="Sprite2D" parent="FishSchool" unique_id=1426123]
+position = Vector2(30, 118)
+texture = ExtResource("10_2cqfq")
+centered = false
+
+[node name="Dokk" type="Sprite2D" parent="." unique_id=1098779946]
+texture = ExtResource("8_074og")
+centered = false
+
+[node name="Paat" type="Node2D" parent="." unique_id=615738068 node_paths=PackedStringArray("rod", "water")]
+position = Vector2(75, 96)
+script = ExtResource("12_cegan")
+rod = NodePath("Ong")
+water = NodePath("../VeePind")
+
+[node name="Ujuk" type="Sprite2D" parent="Paat" unique_id=1545154349]
+texture = ExtResource("13_82xsv")
+centered = false
+
+[node name="Konks" type="Sprite2D" parent="Paat" unique_id=2086080346]
+texture = ExtResource("14_getpj")
+centered = false
+
+[node name="Kalur" type="Sprite2D" parent="Paat" unique_id=1137539726]
+position = Vector2(22, -8)
+texture = ExtResource("9_cegan")
+centered = false
+
+[node name="Ong" type="Sprite2D" parent="Paat" unique_id=1948771615]
+position = Vector2(22, -1)
+texture = ExtResource("10_82xsv")
+centered = false
+offset = Vector2(-24, -16)
+
+[node name="PaadiPilt" type="Sprite2D" parent="Paat" unique_id=957626212]
+texture = ExtResource("11_getpj")
+centered = false
+
+[node name="WaterPlop" type="AudioStreamPlayer" parent="Paat" unique_id=1907586031]
+stream = ExtResource("26_plop")
+volume_db = -2.0
+
+[node name="Tamiil" type="Line2D" parent="Paat" unique_id=1480360417]
+
+[node name="DockView" parent="." instance=ExtResource("90_dockview")]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=38469330]
+
+[node name="DayHUD" type="Control" parent="UI" unique_id=42294868]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = SubResource("Theme_hud")
+script = ExtResource("24_day_hud")
+
+[node name="CatchBox" type="Panel" parent="UI/DayHUD" unique_id=479852674]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 76.0
+offset_bottom = 30.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_jr6nt")
+
+[node name="GoldRow" type="Control" parent="UI/DayHUD/CatchBox" unique_id=819647364]
+anchors_preset = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 106.0
+offset_bottom = 14.0
+mouse_filter = 2
+
+[node name="CoinIcon" type="TextureRect" parent="UI/DayHUD/CatchBox/GoldRow" unique_id=1639409316]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = 12.0
+offset_bottom = 10.0
+scale = Vector2(1, 0.96)
+mouse_filter = 2
+texture = ExtResource("15_2cqfq")
+expand_mode = 1
+stretch_mode = 3
+
+[node name="GoldLabel" type="Label" parent="UI/DayHUD/CatchBox/GoldRow" unique_id=1076224174]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 14.0
+offset_top = -1.0
+offset_right = 38.0
+offset_bottom = 12.0
+text = "0"
+vertical_alignment = 1
+
+[node name="CatchProgress" type="Label" parent="UI/DayHUD/CatchBox" unique_id=1976451348]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 6.0
+offset_top = 10.0
+offset_right = 106.0
+offset_bottom = 24.0
+text = "CATCH 0 / 50 GOLD"
+
+[node name="RoundBox" type="Panel" parent="UI/DayHUD" unique_id=1111967440]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -43.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 30.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_jr6nt")
+
+[node name="TimerLabel" type="Label" parent="UI/DayHUD/RoundBox" unique_id=2019952666]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 25.0
+offset_bottom = 11.0
+text = "02:00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoundLabel" type="Label" parent="UI/DayHUD/RoundBox" unique_id=408974063]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1.0
+offset_top = 10.0
+offset_right = 34.0
+offset_bottom = 21.0
+text = "ROUND 1"
+horizontal_alignment = 1
+
+[node name="KrakenMessage" type="Label" parent="UI/DayHUD" unique_id=164523600]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 8.0
+offset_top = 48.0
+offset_right = 312.0
+offset_bottom = 66.0
+horizontal_alignment = 1
+
+[node name="DockPrompt" type="Label" parent="UI/DayHUD" unique_id=1019967260]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 66.0
+offset_top = 62.0
+offset_right = 216.0
+offset_bottom = 76.0
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "Press E to go to the dock"
+horizontal_alignment = 1
+
+[node name="UpgradeStore" type="Control" parent="UI" unique_id=2126363995]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("22_store")
+
+[node name="FishingMinigame" type="Control" parent="UI" unique_id=1305611231]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("23_minigame")

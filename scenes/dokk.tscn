@@ -1,0 +1,98 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/dock_view.gd" id="0_view"]
+[ext_resource type="Texture2D" path="res://art/taust/Taevas.png" id="1_sky"]
+[ext_resource type="Texture2D" path="res://art/taust/Kuu.png" id="2_moon"]
+[ext_resource type="Texture2D" path="res://art/taust/Mets taga.png" id="3_tback"]
+[ext_resource type="Texture2D" path="res://art/taust/Mets keskel.png" id="4_tmid"]
+[ext_resource type="Texture2D" path="res://art/taust/Mets ees.png" id="5_tfront"]
+[ext_resource type="Texture2D" path="res://art/taust/Vesi.png" id="6_water"]
+[ext_resource type="Script" path="res://scripts/vesi_pind.gd" id="7_vesi"]
+[ext_resource type="Texture2D" path="res://art/dokk/dokk2.png" id="8_dock"]
+[ext_resource type="Script" path="res://scripts/kalur_jalgsi.gd" id="9_walk"]
+[ext_resource type="Texture2D" path="res://art/dokk/kalur_idle.png" id="10_idle"]
+[ext_resource type="Texture2D" path="res://art/dokk/kalur_walk1.png" id="11_w1"]
+[ext_resource type="Texture2D" path="res://art/dokk/kalur_walk2.png" id="12_w2"]
+[ext_resource type="Texture2D" path="res://art/dokk/kalur_walk3.png" id="13_w3"]
+[ext_resource type="Texture2D" path="res://art/dokk/kalur_walk4.png" id="14_w4"]
+[ext_resource type="Texture2D" path="res://art/dokk/pood.png" id="15_shop"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kalur"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("10_idle")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_w1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_w2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_w3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_w4")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}]
+
+[node name="DockView" type="Node2D"]
+z_index = 2
+script = ExtResource("0_view")
+
+[node name="Taevas" type="Sprite2D" parent="."]
+texture = ExtResource("1_sky")
+centered = false
+
+[node name="Kuu" type="Sprite2D" parent="."]
+texture = ExtResource("2_moon")
+centered = false
+
+[node name="Mets taga" type="Sprite2D" parent="."]
+texture = ExtResource("3_tback")
+centered = false
+
+[node name="Mets keskel" type="Sprite2D" parent="."]
+texture = ExtResource("4_tmid")
+centered = false
+
+[node name="Mets ees" type="Sprite2D" parent="."]
+texture = ExtResource("5_tfront")
+centered = false
+
+[node name="Vesi" type="Sprite2D" parent="."]
+texture = ExtResource("6_water")
+centered = false
+
+[node name="VeePind" type="Node2D" parent="."]
+script = ExtResource("7_vesi")
+post_x = Array[int]([14, 38, 62, 86, 110, 134, 158])
+
+[node name="DokiPilt" type="Sprite2D" parent="."]
+texture = ExtResource("8_dock")
+centered = false
+
+[node name="Pood" type="Sprite2D" parent="."]
+texture = ExtResource("15_shop")
+centered = false
+
+[node name="Kalur" type="Node2D" parent="."]
+position = Vector2(150, 80)
+script = ExtResource("9_walk")
+
+[node name="Anim" type="AnimatedSprite2D" parent="Kalur"]
+sprite_frames = SubResource("SpriteFrames_kalur")
+animation = &"idle"
+centered = false
+
+[node name="DockUI" type="CanvasLayer" parent="."]
+layer = 1

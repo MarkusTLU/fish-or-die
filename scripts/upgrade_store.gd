@@ -2,7 +2,7 @@ extends Control
 
 const FONT = preload("res://art/ui/m3x6.ttf")
 const COIN_ICON = preload("res://art/ui/ikoon_kuld.png")
-const STARTING_COINS := 37
+const STARTING_COINS := 0
 
 @onready var coins_hud: Label = %GoldLabel
 @onready var boat: Node2D = get_node("../../Paat")
@@ -43,6 +43,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_U:
 		day_hud.start_round()
 		get_viewport().set_input_as_handled()
+	elif visible and event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_E or event.keycode == KEY_ESCAPE):
+		# poest välja, tagasi dokile kõndima
+		get_viewport().set_input_as_handled()
+		day_hud.close_shop()
 
 func open_dock(message: String) -> void:
 	dialogue_label.text = message

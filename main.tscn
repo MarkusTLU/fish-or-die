@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://bk51nhi01coa6"]
 
+[ext_resource type="PackedScene" path="res://scenes/dokk.tscn" id="90_dockview"]
 [ext_resource type="Texture2D" uid="uid://bgyeyjy25ip01" path="res://art/taust/Taevas.png" id="1_efxa6"]
 [ext_resource type="Texture2D" uid="uid://dwkhd0x42wa31" path="res://art/taust/Kuu.png" id="2_dg77c"]
 [ext_resource type="Texture2D" uid="uid://bg06xtex312vb" path="res://art/taust/Mets taga.png" id="3_ycdy4"]
@@ -133,6 +134,8 @@ volume_db = -2.0
 
 [node name="Tamiil" type="Line2D" parent="Paat" unique_id=1480360417]
 
+[node name="DockView" parent="." instance=ExtResource("90_dockview")]
+
 [node name="UI" type="CanvasLayer" parent="." unique_id=38469330]
 
 [node name="DayHUD" type="Control" parent="UI" unique_id=42294868]
@@ -182,7 +185,7 @@ offset_left = 14.0
 offset_top = -1.0
 offset_right = 38.0
 offset_bottom = 12.0
-text = "37"
+text = "0"
 vertical_alignment = 1
 
 [node name="CatchProgress" type="Label" parent="UI/DayHUD/CatchBox" unique_id=1976451348]
