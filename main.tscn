@@ -24,6 +24,7 @@
 [ext_resource type="Script" path="res://scripts/upgrade_store.gd" id="22_store"]
 [ext_resource type="Script" path="res://scripts/fishing_minigame.gd" id="23_minigame"]
 [ext_resource type="Script" path="res://scripts/day_hud.gd" id="24_day_hud"]
+[ext_resource type="Script" path="res://scripts/vesi_pind.gd" id="25_vesi"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jr6nt"]
 content_margin_left = 3.0
@@ -67,6 +68,9 @@ centered = false
 texture = ExtResource("6_2cqfq")
 centered = false
 
+[node name="VeePind" type="Node2D" parent="."]
+script = ExtResource("25_vesi")
+
 [node name="Vetikad" type="Sprite2D" parent="." unique_id=753097856]
 texture = ExtResource("7_yaehf")
 centered = false
@@ -93,10 +97,11 @@ centered = false
 texture = ExtResource("8_074og")
 centered = false
 
-[node name="Paat" type="Node2D" parent="." unique_id=615738068 node_paths=PackedStringArray("rod")]
+[node name="Paat" type="Node2D" parent="." unique_id=615738068 node_paths=PackedStringArray("rod", "water")]
 position = Vector2(75, 96)
 script = ExtResource("12_cegan")
 rod = NodePath("Ong")
+water = NodePath("../VeePind")
 
 [node name="Ujuk" type="Sprite2D" parent="Paat" unique_id=1545154349]
 texture = ExtResource("13_82xsv")
