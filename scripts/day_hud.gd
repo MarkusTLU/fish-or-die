@@ -66,3 +66,11 @@ func _on_shop_closed(ended_day: bool) -> void:
 	time_remaining = day_length_seconds
 	waiting_for_shop = false
 	update_hud()
+
+
+# Mängija sõitis doki juurde ja vajutas E: päev lõpeb ja avaneb Krakeni pood
+func go_to_dock() -> void:
+	if waiting_for_shop:
+		return
+	waiting_for_shop = true
+	shop.open_for_end_of_day()
