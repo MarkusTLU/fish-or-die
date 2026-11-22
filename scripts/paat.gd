@@ -12,36 +12,47 @@ const LINE_X := -5.0               # kus tamiil vette läheb
 const HANG_LENGTH := 6.0           # kui pikalt konks otsas ripub
 const ROD_VECTOR := Vector2(-24, -16)  # käest õnge otsani
 
-enum State { IDLE, CASTING, IN_WATER }
+enum State { IDLE, CASTING, IN_WATER, MINIGAME }
 var state := State.IDLE
 var depth := 0.0
 var fly_t := 0.0   # 0 = konks õnge otsas, 1 = konks vees
 var sailing_time := 0.0
 var rest_position := Vector2.ZERO
 var rest_rotation := 0.0
+var bite_cooldown := 0.0
+var target_fish: Sprite2D
 
 @export var rod: Sprite2D
 @onready var line: Line2D = $Tamiil
 @onready var bobber: Sprite2D = $Ujuk
 @onready var hook: Sprite2D = $Konks
+@onready var fish_school = get_node("../FishSchool")
+@onready var fishing_minigame = get_node("../UI/FishingMinigame")
+@onready var upgrade_store = get_node("../UI/UpgradeStore")
 
 func _ready() -> void:
 	rest_position = position
 	rest_rotation = rotation
 	line.width = 1.0
 	line.default_color = Color("9aa7b0")
+	fishing_minigame.fish_caught.connect(_on_fish_caught)
+	fishing_minigame.fish_escaped.connect(_on_fish_escaped)
 
 # Kus õnge ots praegu on (arvestab pööramist)
 func rod_tip() -> Vector2:
 	return rod.position + ROD_VECTOR.rotated(rod.rotation)
 
 func _process(delta: float) -> void:
+	if bite_cooldown > 0.0:
+		bite_cooldown -= delta
 	sailing_time += delta
 	position = rest_position + Vector2(
 		sin(sailing_time * 0.65) * drift_distance,
 		sin(sailing_time * 1.8) * bob_height
 	)
 	rotation = rest_rotation + sin(sailing_time * 1.35) * rocking_angle
+	if state == State.MINIGAME:
+		return
 
 	if Input.is_action_just_pressed("ui_accept"):
 		if state == State.IDLE:
@@ -78,6 +89,29 @@ func _process(delta: float) -> void:
 			bobber.position = bob + Vector2(-1, -2)
 			hook.position = hook_pos + Vector2(-2, 0)
 			line.points = PackedVector2Array([tip, bob, hook_pos])
+			try_find_fish(hook.position)
+
+func try_find_fish(hook_local_position: Vector2) -> void:
+	if bite_cooldown > 0.0:
+		return
+	var fish_position: Vector2 = fish_school.to_local(to_global(hook_local_position))
+	target_fish = fish_school.find_fish_near(fish_position)
+	if target_fish != null:
+		state = State.MINIGAME
+		fishing_minigame.start_game(fish_school.get_fish_value(target_fish))
+
+func _on_fish_caught() -> void:
+	if is_instance_valid(target_fish):
+		var reward: int = fish_school.catch_fish(target_fish)
+		upgrade_store.award_coins(reward)
+	target_fish = null
+	state = State.IN_WATER
+	bite_cooldown = 0.8
+
+func _on_fish_escaped() -> void:
+	target_fish = null
+	state = State.IN_WATER
+	bite_cooldown = 1.5
 
 func start_cast() -> void:
 	state = State.CASTING

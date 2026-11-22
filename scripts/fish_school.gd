@@ -70,3 +70,34 @@ func update_swimmers(delta: float) -> void:
 		var visibility_wave := (sin(elapsed * swimmer["fade_speed"] + swimmer["phase"]) + 1.0) * 0.5
 		var depth_ratio := inverse_lerp(water_bounds.position.y, water_bounds.end.y, swimmer["depth"])
 		fish.modulate = Color(0.72, 0.88, 0.95, smoothstep(0.15, 0.85, visibility_wave) * lerpf(0.7, 0.4, depth_ratio))
+
+
+func find_fish_near(position: Vector2) -> Sprite2D:
+	for swimmer in school:
+		var fish: Sprite2D = swimmer["sprite"]
+		if not is_instance_valid(fish) or not fish.visible or fish.modulate.a < 0.25:
+			continue
+		var fish_center := fish.position + fish.texture.get_size() * 0.5
+		var horizontal_range := maxf(6.0, fish.texture.get_width() * 0.5)
+		var vertical_range := maxf(5.0, fish.texture.get_height() * 0.5)
+		if absf(fish_center.x - position.x) <= horizontal_range and absf(fish_center.y - position.y) <= vertical_range:
+			return fish
+	return null
+
+
+func get_fish_value(fish: Sprite2D) -> int:
+	if fish.texture == FISH_TEXTURES[0]:
+		return 25
+	if fish.texture == FISH_TEXTURES[1]:
+		return 10
+	return 5
+
+
+func catch_fish(fish: Sprite2D) -> int:
+	var reward := get_fish_value(fish)
+	for index in range(school.size()):
+		if school[index]["sprite"] == fish:
+			school.remove_at(index)
+			break
+	fish.queue_free()
+	return reward

@@ -21,6 +21,9 @@
 [ext_resource type="FontFile" uid="uid://cbittsoiqjv5d" path="res://art/ui/m3x6.ttf" id="16_2cqfq"]
 [ext_resource type="Script" path="res://scripts/fish_school.gd" id="20_fish_school"]
 [ext_resource type="Texture2D" path="res://art/ui/paneel.png" id="21_panel"]
+[ext_resource type="Script" path="res://scripts/upgrade_store.gd" id="22_store"]
+[ext_resource type="Script" path="res://scripts/fishing_minigame.gd" id="23_minigame"]
+[ext_resource type="Script" path="res://scripts/day_hud.gd" id="24_day_hud"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jr6nt"]
 content_margin_left = 3.0
@@ -125,23 +128,35 @@ centered = false
 [node name="PanelContainer" type="PanelContainer" parent="UI" unique_id=957246023]
 offset_left = 6.0
 offset_top = 6.0
-offset_right = 14.0
-offset_bottom = 12.0
+offset_right = 48.0
+offset_bottom = 25.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_jr6nt")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UI/PanelContainer" unique_id=1988059988]
 layout_mode = 2
+theme_override_constants/separation = 2
 
 [node name="TextureRect" type="TextureRect" parent="UI/PanelContainer/HBoxContainer" unique_id=1223691404]
 layout_mode = 2
+custom_minimum_size = Vector2(10, 10)
 size_flags_vertical = 4
 texture = ExtResource("15_2cqfq")
 stretch_mode = 3
 
 [node name="Label" type="Label" parent="UI/PanelContainer/HBoxContainer" unique_id=1369602693]
 layout_mode = 2
+custom_minimum_size = Vector2(24, 12)
 theme_override_colors/font_color = Color(0.9098039, 0.8784314, 0.8156863, 1)
 theme_override_fonts/font = SubResource("FontVariation_qlure")
 theme_override_font_sizes/font_size = 16
 text = "37"
 vertical_alignment = 1
+
+[node name="DayHUD" type="Control" parent="UI"]
+script = ExtResource("24_day_hud")
+
+[node name="UpgradeStore" type="Control" parent="UI"]
+script = ExtResource("22_store")
+
+[node name="FishingMinigame" type="Control" parent="UI"]
+script = ExtResource("23_minigame")
