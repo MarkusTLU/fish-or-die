@@ -1,76 +1,166 @@
 extends Control
+## Owns the run. Catch value stays separate from spendable gold until sold.
+
+enum Phase { DOCK, FISHING, GAME_OVER }
 
 const FONT = preload("res://art/ui/m3x6.ttf")
-
-@export_range(15.0, 600.0, 15.0) var day_length_seconds := 120.0
+@export_range(15.0, 600.0, 5.0) var day_length_seconds := 120.0
+@export var starting_quota := 50
+@export var quota_multiplier := 1.5
+@export var extra_seconds_per_round := 5.0
 
 @onready var shop = get_node("../UpgradeStore")
 @onready var fishing_minigame = get_node("../FishingMinigame")
+@onready var boat = get_node("../../Paat")
+@onready var fish_school = get_node("../../FishSchool")
 
+var phase := Phase.DOCK
 var day_number := 1
+var rounds_survived := 0
+var quota := 0
+var catch_value := 0
+var bucket_count := 0
+var total_gold_earned := 0
 var time_remaining := 0.0
-var waiting_for_shop := false
-var bucket_label: Label
-var day_label: Label
-var timer_label: Label
+@onready var day_label: Label = %RoundLabel
+@onready var timer_label: Label = %TimerLabel
+@onready var quota_label: Label = %CatchProgress
+@onready var message_label: Label = %KrakenMessage
+@onready var catch_text_color: Color = quota_label.get_theme_color("font_color")
+@export var quota_met_color := Color("79bd68")
+var message_time := 0.0
 
 func _ready() -> void:
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	time_remaining = day_length_seconds
-	bucket_label = make_label("BUCKET 0", Vector2(60, 4), Vector2(82, 18))
-	timer_label = make_label("02:00", Vector2(210, 4), Vector2(44, 18))
-	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	day_label = make_label("DAY 1", Vector2(260, 4), Vector2(50, 18))
-	day_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	add_child(bucket_label)
-	add_child(day_label)
-	add_child(timer_label)
-	shop.shop_closed.connect(_on_shop_closed)
+	quota = starting_quota
+	time_remaining = round_duration()
+	update_hud()
+	# Sibling shop/boat references are initialized after this node's _ready.
+	open_initial_dock.call_deferred()
+
+func open_initial_dock() -> void:
+	boat.reset_fishing(true)
+	shop.open_dock("Catch at least %d gold of fish. Return before the deep claims you." % quota)
+
+func round_duration() -> float:
+	return day_length_seconds + (day_number - 1) * extra_seconds_per_round
+
+func is_fishing() -> bool:
+	return phase == Phase.FISHING
+
+func start_round() -> void:
+	if phase != Phase.DOCK:
+		return
+	catch_value = 0
+	bucket_count = 0
+	time_remaining = round_duration()
+	message_time = 0.0
+	message_label.text = ""
+	fish_school.replenish()
+	boat.reset_fishing(true)
+	shop.close_dock()
+	phase = Phase.FISHING
 	update_hud()
 
 func _process(delta: float) -> void:
-	if waiting_for_shop or shop.visible or fishing_minigame.visible:
+	if not is_fishing():
 		return
+	if message_time > 0.0:
+		message_time -= delta
+		if message_time <= 0.0:
+			message_label.text = ""
 	time_remaining = maxf(0.0, time_remaining - delta)
 	update_hud()
 	if time_remaining <= 0.0:
-		waiting_for_shop = true
-		timer_label.text = "00:00"
-		shop.open_for_end_of_day()
+		if catch_value >= quota:
+			complete_round()
+		else:
+			end_run()
 
-func make_label(value: String, label_position: Vector2, label_size: Vector2) -> Label:
-	var label := Label.new()
-	label.text = value
-	label.position = label_position
-	label.size = label_size
-	label.add_theme_font_override("font", FONT)
-	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color("f2dfb7"))
-	return label
+func record_catch(value: int) -> void:
+	if not is_fishing():
+		return
+	bucket_count += 1
+	catch_value += value
+	update_hud()
+	if catch_value >= quota:
+		show_message("QUOTA MET - RETURN TO THE DOCK")
+
+func go_to_dock() -> void:
+	if not is_fishing():
+		return
+	if catch_value < quota:
+		show_message("KRAKEN: Not enough fish! %d / %d GOLD" % [catch_value, quota])
+		boat.boat_x = boat.max_x - 14.0
+		return
+	complete_round()
+
+func complete_round() -> void:
+	if not is_fishing():
+		return
+	phase = Phase.DOCK
+	boat.reset_fishing(true)
+	var sold_value := catch_value
+	var sold_count := bucket_count
+	shop.award_coins(sold_value)
+	total_gold_earned += sold_value
+	rounds_survived += 1
+	day_number += 1
+	quota = ceili(quota * quota_multiplier)
+	catch_value = 0
+	bucket_count = 0
+	time_remaining = round_duration()
+	message_label.text = ""
+	update_hud()
+	shop.open_dock("Sold %d fish for %d gold. Next quota: %d gold." % [sold_count, sold_value, quota])
+
+func end_run() -> void:
+	if not is_fishing():
+		return
+	phase = Phase.GAME_OVER
+	boat.reset_fishing()
+	boat.set_process(false)
+	shop.close_dock()
+	message_label.text = ""
+	# Sink the existing boat before fading to the results screen.
+	var sink := create_tween()
+	sink.tween_property(boat, "position:y", boat.position.y + 35.0, 1.0)
+	sink.parallel().tween_property(boat, "rotation", 0.45, 1.0)
+	var overlay := ColorRect.new()
+	overlay.color = Color.BLACK
+	overlay.modulate.a = 0.0
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	get_parent().add_child(overlay)
+	sink.tween_property(overlay, "modulate:a", 1.0, 0.5)
+	var content := VBoxContainer.new()
+	content.position = Vector2(30, 24)
+	content.size = Vector2(260, 132)
+	content.add_theme_constant_override("separation", 6)
+	overlay.add_child(content)
+	for text_value in ["GAME OVER", "The Kraken claimed your boat.", "Catch: %d / %d gold" % [catch_value, quota], "Rounds survived: %d" % rounds_survived, "Gold: %d   Total earned: %d" % [shop.coins, total_gold_earned]]:
+		var label := Label.new()
+		label.text = text_value
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_font_override("font", FONT)
+		label.add_theme_font_size_override("font_size", 14)
+		content.add_child(label)
+	var retry := Button.new()
+	retry.text = "TRY AGAIN"
+	retry.add_theme_font_override("font", FONT)
+	retry.add_theme_font_size_override("font_size", 14)
+	retry.pressed.connect(restart_run)
+	content.add_child(retry)
+	retry.grab_focus()
+
+func restart_run() -> void:
+	get_tree().reload_current_scene()
+
+func show_message(value: String) -> void:
+	message_label.text = value
+	message_time = 3.0
 
 func update_hud() -> void:
-	day_label.text = "DAY %d" % day_number
-	var total_seconds := ceili(time_remaining)
-	var minutes := floori(float(total_seconds) / 60.0)
-	var seconds := total_seconds % 60
-	timer_label.text = "%02d:%02d" % [minutes, seconds]
-
-func set_bucket_count(count: int) -> void:
-	bucket_label.text = "BUCKET %d" % count
-
-func _on_shop_closed(ended_day: bool) -> void:
-	if not ended_day:
-		return
-	day_number += 1
-	time_remaining = day_length_seconds
-	waiting_for_shop = false
-	update_hud()
-
-
-# Mängija sõitis doki juurde ja vajutas E: päev lõpeb ja avaneb Krakeni pood
-func go_to_dock() -> void:
-	if waiting_for_shop:
-		return
-	waiting_for_shop = true
-	shop.open_for_end_of_day()
+	day_label.text = "ROUND %d" % day_number
+	var seconds := ceili(time_remaining)
+	timer_label.text = "%02d:%02d" % [seconds / 60, seconds % 60]
+	quota_label.text = "CATCH %d / %d GOLD" % [catch_value, quota]
+	quota_label.add_theme_color_override("font_color", quota_met_color if catch_value >= quota else catch_text_color)

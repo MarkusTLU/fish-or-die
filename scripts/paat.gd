@@ -26,14 +26,18 @@ var depth := 0.0
 var fly_t := 0.0   # 0 = konks õnge otsas, 1 = konks vees
 var sailing_time := 0.0
 var rest_position := Vector2.ZERO
+var facing_left := true
 var boat_x := 0.0   # paadi praegune asukoht (x), muutub sõudes
 var rest_rotation := 0.0
 var waterline := 0.0   # kui sügavalt paat vees istub
 var bite_cooldown := 0.0
+var cast_tween: Tween
 var target_fish: Sprite2D
+var catch_popup: Control
 
 @export var rod: Sprite2D
 @export var water: VeePind   # dünaamiline veepind
+@onready var water_plop: AudioStreamPlayer = $WaterPlop
 @onready var line: Line2D = $Tamiil
 @onready var bobber: Sprite2D = $Ujuk
 @onready var hook: Sprite2D = $Konks
@@ -41,7 +45,7 @@ var target_fish: Sprite2D
 @onready var fishing_minigame = get_node("../UI/FishingMinigame")
 @onready var upgrade_store = get_node("../UI/UpgradeStore")
 @onready var day_hud = get_node("../UI/DayHUD")
-var dock_prompt: Label   # tekst "Press E to go to the dock"
+@onready var dock_prompt: Label = %DockPrompt
 
 func _ready() -> void:
 	rest_position = position
@@ -53,24 +57,14 @@ func _ready() -> void:
 	line.default_color = Color("9aa7b0")
 	fishing_minigame.fish_caught.connect(_on_fish_caught)
 	fishing_minigame.fish_escaped.connect(_on_fish_escaped)
-	# Doki juures näidatav vihje (UI kihis, et see oleks alati kõige peal)
-	dock_prompt = Label.new()
-	dock_prompt.text = "Press E to go to the dock"
-	dock_prompt.add_theme_font_override("font", UI_FONT)
-	dock_prompt.add_theme_font_size_override("font_size", 16)
-	dock_prompt.add_theme_color_override("font_color", Color("f2dfb7"))
-	dock_prompt.add_theme_color_override("font_outline_color", Color("11151a"))
-	dock_prompt.add_theme_constant_override("outline_size", 4)
-	dock_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	dock_prompt.position = Vector2(66, 62)
-	dock_prompt.size = Vector2(150, 14)
-	dock_prompt.visible = false
-	get_node("../UI").add_child(dock_prompt)
+	catch_popup = preload("res://scripts/catch_popup.gd").new()
+	catch_popup.name = "CatchPopup"
+	get_node("../UI").add_child.call_deferred(catch_popup)
 
 
 # Kas paat on doki juures ja valmis dokile minema?
 func is_at_dock() -> bool:
-	return state == State.IDLE and boat_x >= max_x - 0.5 and not upgrade_store.visible
+	return day_hud.is_fishing() and state == State.IDLE and boat_x >= max_x - 0.5 and not upgrade_store.visible
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -83,7 +77,17 @@ func _unhandled_input(event: InputEvent) -> void:
 func rod_tip() -> Vector2:
 	return rod.position + ROD_VECTOR.rotated(rod.rotation)
 
+# Mirror around the hull centre so changing direction keeps the same footprint.
+func facing_offset() -> float:
+	return 0.0 if facing_left else HULL_LEFT + HULL_RIGHT
+
+func fishing_x() -> float:
+	return boat_x + facing_offset() + LINE_X * (1.0 if facing_left else -1.0)
+
 func _process(delta: float) -> void:
+	if not day_hud.is_fishing():
+		dock_prompt.visible = false
+		return
 	if bite_cooldown > 0.0:
 		bite_cooldown -= delta
 	sailing_time += delta
@@ -92,6 +96,8 @@ func _process(delta: float) -> void:
 	if state == State.IDLE:
 		var row_dir := Input.get_axis("ui_left", "ui_right")
 		if row_dir != 0.0:
+			facing_left = row_dir < 0.0
+			scale.x = 1.0 if facing_left else -1.0
 			boat_x = clampf(boat_x + row_dir * row_speed * delta, min_x, max_x)
 			if water and wake_force > 0.0:
 				# Paadi taha tekib väike vool
@@ -107,13 +113,13 @@ func _process(delta: float) -> void:
 		var left_y: float = water.idle_height_at(left_x)
 		var right_y: float = water.idle_height_at(right_x)
 		var surface := (left_y + right_y) * 0.5
-		position = Vector2(boat_x + drift_x, round(surface - waterline))
+		position = Vector2(boat_x + drift_x + facing_offset(), round(surface - waterline))
 		var tilt := atan2(right_y - left_y, HULL_RIGHT - HULL_LEFT)
 		rotation = clampf(tilt, -max_tilt, max_tilt)
 		# Paadi põhi jääb vee alla: vesi joonistatakse paadi kohal ka paadi ette
-		water.set_front_range(position.x - 2.0, position.x + 51.0)
+		water.set_front_range(boat_x + drift_x - 2.0, boat_x + drift_x + 51.0)
 	else:
-		position = Vector2(boat_x + drift_x, rest_position.y + sin(sailing_time * 1.8) * bob_height)
+		position = Vector2(boat_x + drift_x + facing_offset(), rest_position.y + sin(sailing_time * 1.8) * bob_height)
 		rotation = rest_rotation + sin(sailing_time * 1.35) * rocking_angle
 	if state == State.MINIGAME:
 		return
@@ -124,7 +130,7 @@ func _process(delta: float) -> void:
 		elif state == State.IN_WATER:
 			state = State.IDLE
 			if water:
-				water.splash(boat_x + LINE_X, -0.8)
+				water.splash(fishing_x(), -0.8)
 		elif state == State.BITE and is_instance_valid(target_fish):
 			state = State.MINIGAME
 			queue_redraw()
@@ -132,7 +138,7 @@ func _process(delta: float) -> void:
 
 	var tip := rod_tip()
 	# Keep the float and submerged hook in the water as the boat rocks.
-	var water_position := Vector2(boat_x, rest_position.y) + Vector2(LINE_X, SURFACE_Y)
+	var water_position := Vector2(fishing_x(), rest_position.y + SURFACE_Y)
 	var bob := to_local(get_parent().to_global(water_position))
 	if water:
 		# Ujuk kõigub koos lainetega
@@ -183,10 +189,13 @@ func try_find_fish(hook_local_position: Vector2) -> void:
 		queue_redraw()
 
 func _on_fish_caught() -> void:
+	if not day_hud.is_fishing():
+		return
 	if is_instance_valid(target_fish):
+		var caught_texture: Texture2D = target_fish.texture
 		var reward: int = fish_school.catch_fish(target_fish)
-		upgrade_store.add_to_bucket()
-		upgrade_store.award_coins(reward)
+		day_hud.record_catch(reward)
+		catch_popup.show_catch(caught_texture, reward)
 	target_fish = null
 	state = State.IDLE
 	rod.rotation = 0.0
@@ -204,7 +213,8 @@ func start_cast() -> void:
 	state = State.CASTING
 	fly_t = 0.0
 	depth = min_depth
-	var tw := create_tween()
+	cast_tween = create_tween()
+	var tw := cast_tween
 	# 1) Õng läheb selja taha
 	tw.tween_property(rod, "rotation", 1.4, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	# 2) Kiire vise ette
@@ -217,5 +227,29 @@ func start_cast() -> void:
 
 func _on_hook_lands() -> void:
 	state = State.IN_WATER
+	water_plop.pitch_scale = randf_range(0.97, 1.03)
+	water_plop.play()
 	if water:
-		water.splash(boat_x + LINE_X, 1.2)
+		water.splash(fishing_x(), 1.2)
+
+
+# Cancel pending casts/challenges on every round transition.
+func reset_fishing(at_dock: bool = false) -> void:
+	if is_instance_valid(catch_popup):
+		catch_popup.cancel()
+	if cast_tween != null and cast_tween.is_valid():
+		cast_tween.kill()
+	fishing_minigame.cancel()
+	target_fish = null
+	state = State.IDLE
+	depth = min_depth
+	rod.rotation = 0.0
+	bobber.visible = false
+	bite_cooldown = 0.0
+	dock_prompt.visible = false
+	if at_dock:
+		boat_x = max_x
+		facing_left = true
+		scale.x = 1.0
+		position.x = boat_x
+	queue_redraw()

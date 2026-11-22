@@ -109,3 +109,11 @@ func _draw() -> void:
 	var typed_color := Color("e3e5df") if target_text.begins_with(typed_text) else Color("e77968")
 	var typed_display := "TYPE: " + typed_text.to_upper() + "_"
 	draw_string(FONT, panel_position + Vector2(6, 32), typed_display, HORIZONTAL_ALIGNMENT_LEFT, int(panel_width - 12), 10, typed_color)
+
+
+# Transition cancellation must not emit catch/escape signals.
+func cancel() -> void:
+	active = false
+	visible = false
+	target_fish = null
+	queue_redraw()

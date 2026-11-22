@@ -1,12 +1,10 @@
 extends Control
 
-signal shop_closed(ended_day: bool)
-
 const FONT = preload("res://art/ui/m3x6.ttf")
 const COIN_ICON = preload("res://art/ui/ikoon_kuld.png")
 const STARTING_COINS := 37
 
-@onready var coins_hud: Label = get_node("../PanelContainer/HBoxContainer/Label")
+@onready var coins_hud: Label = %GoldLabel
 @onready var boat: Node2D = get_node("../../Paat")
 @onready var day_hud = get_node("../DayHUD")
 
@@ -14,8 +12,8 @@ var coins := STARTING_COINS
 var shop_panel: Control
 var coins_label: Label
 var dialogue_label: Label
-var end_day_shop := false
-var bucket_count := 0
+var round_label: Label
+var depart_button: Button
 var card_buttons: Dictionary = {}
 var levels := {
 	"Deep Line": 0,
@@ -42,23 +40,22 @@ func _ready() -> void:
 	shop_panel.visible = false
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_U:
-		if shop_panel.visible:
-			shop_panel.visible = false
-			var ended_day := end_day_shop
-			end_day_shop = false
-			shop_closed.emit(ended_day)
-		else:
-			shop_panel.visible = true
+	if visible and event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_U:
+		day_hud.start_round()
 		get_viewport().set_input_as_handled()
 
-func open_for_end_of_day() -> void:
-	end_day_shop = true
-	if bucket_count > 0:
-		dialogue_label.text = "You hauled up %d fish. Choose your gear carefully." % bucket_count
-	else:
-		dialogue_label.text = "Your bucket's empty, chum. Try again tomorrow."
-	shop_panel.visible = true
+func open_dock(message: String) -> void:
+	dialogue_label.text = message
+	round_label.text = "ROUND %d: %d GOLD / %ds" % [day_hud.day_number, day_hud.quota, int(day_hud.round_duration())]
+	depart_button.text = "ROW OUT [U]"
+	visible = true
+	depart_button.grab_focus()
+
+func close_dock() -> void:
+	visible = false
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null:
+		focused.release_focus()
 
 func build_shop() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -101,10 +98,30 @@ func build_shop() -> void:
 	coins_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	coin_row.add_child(coins_label)
 
+	round_label = make_label("", 12, Color("e7c77c"))
+	round_label.position = Vector2(10, 27)
+	round_label.size = Vector2(200, 14)
+	add_child(round_label)
+	depart_button = Button.new()
+	depart_button.position = Vector2(218, 26)
+	depart_button.size = Vector2(92, 15)
+	depart_button.add_theme_font_override("font", FONT)
+	depart_button.add_theme_font_size_override("font_size", 12)
+	depart_button.add_theme_stylebox_override("normal", panel_style(Color("263f4d"), Color("aec0b5"), 1, 1))
+	depart_button.add_theme_stylebox_override("hover", panel_style(Color("355565"), Color("e7c77c"), 1, 1))
+	depart_button.add_theme_stylebox_override("pressed", panel_style(Color("172b37"), Color("e7c77c"), 1, 1))
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = Color.TRANSPARENT
+	focus_style.border_color = Color("e7c77c")
+	focus_style.set_border_width_all(1)
+	depart_button.add_theme_stylebox_override("focus", focus_style)
+	depart_button.pressed.connect(day_hud.start_round)
+	add_child(depart_button)
+
 	for index in range(ITEMS.size()):
 		var item: Dictionary = ITEMS[index]
 		var card := make_card(item)
-		card.position = Vector2(10 + (index % 3) * 100, 29 + floori(float(index) / 3.0) * 49)
+		card.position = Vector2(10 + (index % 3) * 100, 43 + floori(float(index) / 3.0) * 43)
 		add_child(card)
 
 	var dialogue_box := PanelContainer.new()
@@ -126,7 +143,7 @@ func build_shop() -> void:
 
 func make_card(item: Dictionary) -> PanelContainer:
 	var card := PanelContainer.new()
-	card.size = Vector2(94, 44)
+	card.size = Vector2(94, 41)
 	card.add_theme_stylebox_override("panel", panel_style(item["tint"], Color("9eb1ad"), 1, 3))
 	var content := VBoxContainer.new()
 	content.add_theme_constant_override("separation", 0)
@@ -172,6 +189,8 @@ func panel_style(fill: Color, border: Color, border_width: int, margin: int) -> 
 	return style
 
 func purchase(item: Dictionary) -> void:
+	if not visible or day_hud.phase != day_hud.Phase.DOCK:
+		return
 	var item_name: String = item["name"]
 	var price: int = item["price"]
 	if int(levels[item_name]) > 0:
@@ -195,10 +214,6 @@ func award_coins(amount: int) -> void:
 	coins_hud.text = str(coins)
 	if is_instance_valid(coins_label):
 		coins_label.text = str(coins)
-
-func add_to_bucket() -> void:
-	bucket_count += 1
-	day_hud.set_bucket_count(bucket_count)
 
 func apply_upgrade(item_name: String) -> void:
 	match item_name:

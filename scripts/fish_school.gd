@@ -20,16 +20,7 @@ func _ready() -> void:
 	for child in get_children():
 		if child is Sprite2D:
 			add_swimmer(child)
-	for index in range(maxi(0, fish_count - school.size())):
-		var fish := Sprite2D.new()
-		fish.texture = FISH_TEXTURES[index % FISH_TEXTURES.size()]
-		fish.centered = false
-		fish.position = Vector2(
-			rng.randf_range(water_bounds.position.x, water_bounds.end.x - fish.texture.get_width()),
-			rng.randf_range(water_bounds.position.y + 3, water_bounds.end.y - fish.texture.get_height() - 3)
-		)
-		add_child(fish)
-		add_swimmer(fish)
+	replenish()
 	update_swimmers(0.0)
 
 
@@ -101,3 +92,18 @@ func catch_fish(fish: Sprite2D) -> int:
 			break
 	fish.queue_free()
 	return reward
+
+
+# Restore the lake population before each round.
+func replenish() -> void:
+	for index in range(maxi(0, fish_count - school.size())):
+		var fish := Sprite2D.new()
+		fish.texture = FISH_TEXTURES[index % FISH_TEXTURES.size()]
+		fish.centered = false
+		fish.position = Vector2(
+			rng.randf_range(water_bounds.position.x, water_bounds.end.x - fish.texture.get_width()),
+			rng.randf_range(water_bounds.position.y + 3, water_bounds.end.y - fish.texture.get_height() - 3)
+		)
+		add_child(fish)
+		add_swimmer(fish)
+	update_swimmers(0.0)
